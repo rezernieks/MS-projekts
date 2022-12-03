@@ -1,0 +1,1 @@
+# Projekts, kas saņem attēlus un nosūta tos apstrādei (Renars)

@@ -1,0 +1,1 @@
+# Projekts, kas darbojas ar Reddis - ir REST API, lai rakstītu jaunu vērtību un iegūtu esošo no Reddis (Daniels)

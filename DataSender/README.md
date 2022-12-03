@@ -1,0 +1,1 @@
+# Projekts, kas augšupielādē fotoattēlus ar noteiktu periodiskumu (Eduards)

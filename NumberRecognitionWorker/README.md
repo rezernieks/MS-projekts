@@ -1,0 +1,1 @@
+# Projekts, kas ņem fotoattēlus no rindas un apstrādā tos (Kirils)
