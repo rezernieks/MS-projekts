@@ -24,5 +24,13 @@ services:
       - RABBITMQ_DEFAULT_USER=rabbit-bunny
       - RABBITMQ_DEFAULT_PASS=M@k0nsk@it1os@na
 
+  number_recognition_worker:
+    container_name: 'number_recognition_worker'
+    build: ./NumberRecognitionWorker
+    restart: always
+    depends_on:
+      - minio
+      - rabbitmq
+
 volumes:
   minio_storage: {}

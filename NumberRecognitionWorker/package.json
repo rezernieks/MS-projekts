@@ -1,0 +1,16 @@
+{
+  "name": "number-recognition-worker",
+  "version": "1.0.0",
+  "description": "Get picture from queue, then use OpenALPR to recognize number on it and send notification if car is on exit",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "amqplib": "^0.10.3",
+    "minio": "^7.0.32",
+    "nodemailer": "^6.8.0"
+  }
+}
