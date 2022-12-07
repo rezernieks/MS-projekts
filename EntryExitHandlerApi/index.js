@@ -12,7 +12,9 @@ const bodyParser = require('body-parser');
 //    secretKey: 'M@k0nsk@it1os@na'});
 
 console.log("initiated");
-
+app.listen(3000, () => {
+    console.log("App listening on port 3000")
+})
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 app.post('/', function(req, res) {
