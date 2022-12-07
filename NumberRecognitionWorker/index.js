@@ -14,10 +14,10 @@ const minioClient = new minio.Client({
 });
 
 const transporter = nodemailer.createTransport({
-    service: 'XXXXX',
+    service: 'gmail',
     auth: {
-        user: 'todo@email.com',
-        pass: 'TODOTODODO'
+        user: 'number.recognizer.worker@gmail.com',
+        pass: 'tbdilvarokujrvsy'
     }
 });
 
@@ -93,6 +93,7 @@ const deleteFile = async (fileName) => {
 const getRecordValue = async (key) => {
     // TODO: Get record from Redis
     // TODO: Delete record from Redis (delete on Redis service side?)
+    return new Date();
 }
 
 const createRecord = async (key, val) => {
