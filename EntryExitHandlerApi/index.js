@@ -39,7 +39,10 @@ app.post('/post_photo', function(req, res) {
         console.log('File uploaded successfully.')
     });
 
-    amqp.connect('amqp://127.0.0.1:15672', function(error0, connection) {
+    const rabbitmq_username = 'rabbit-bunny';
+    const rabbitmq_password = 'M@k0nsk@it1os@na';
+    const rabbitmq_url = '127.0.0.1:5672';
+    amqp.connect('amqp://${rabbitmq_username}:${rabbitmq_password}@${rabbitmq_url}', function(error0, connection) {
         if (error0) { throw error0; }
         connection.createChannel(function(error1, channel) {
             if (error1) {
