@@ -31,6 +31,12 @@ services:
     depends_on:
       - minio
       - rabbitmq
+  datasender:
+   containter_name: 'eduards/datasender'
+   build : './Datasender'
+   restart: 'always'
+   ports:
+      - '3000'
 
 volumes:
   minio_storage: {}
