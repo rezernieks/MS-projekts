@@ -58,7 +58,7 @@ const limits = {
       num : img_n
     };
   axios
-    .post('http://localhost:3000/', data)
+    .post('http://localhost:9000/', data)
     .then(res => {
       console.log(`Status: ${res.status}`)
       //console.log('Body: ', res.data)
