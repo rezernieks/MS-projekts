@@ -1,3 +1,31 @@
+Skip to content
+Search or jump to…
+Pull requests
+Issues
+Codespaces
+Marketplace
+Explore
+ 
+@evele-eduard 
+rezernieks
+/
+MS-projekts
+Private
+Code
+Issues
+Pull requests
+Actions
+Projects
+Security
+Insights
+MS-projekts/docker-compose.yml
+
+Kirill Number recognition worker basis
+Latest commit be0960e last week
+ History
+ 0 contributors
+36 lines (32 sloc)  782 Bytes
+
 version: '3.8'
 
 services:
@@ -31,12 +59,21 @@ services:
     depends_on:
       - minio
       - rabbitmq
-  datasender:
-   containter_name: 'eduards/datasender'
-   build : './Datasender'
-   restart: 'always'
-   ports:
-      - '3000'
 
 volumes:
   minio_storage: {}
+Footer
+© 2022 GitHub, Inc.
+Footer navigation
+Terms
+Privacy
+Security
+Status
+Docs
+Contact GitHub
+Pricing
+API
+Training
+Blog
+About
+MS-projekts/docker-compose.yml at kirill/number-recognition-worker · rezernieks/MS-projekts
