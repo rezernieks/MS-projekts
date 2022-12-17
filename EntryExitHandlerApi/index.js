@@ -16,7 +16,7 @@ const minioClient = new Minio.Client({
     accessKey: 'minio-root',
     secretKey: 'M@k0nsk@it1os@na'});
 
-function rabbitsender(data){
+function rabbit_sender(data){
     amqp.connect(`amqp://${rabbitmq_username}:${rabbitmq_password}@${rabbitmq_url}`, function(error0, connection) {
         if (error0) { throw error0; }
         connection.createChannel(function(error1, channel) {
@@ -35,7 +35,7 @@ function rabbitsender(data){
     });
 }
 
-function rabbitreceiver(){
+function rabbit_receiver(){
     amqp.connect(`amqp://${rabbitmq_username}:${rabbitmq_password}@${rabbitmq_url}`, function(error0, connection) {
         if (error0) {
             throw error0;
@@ -60,7 +60,7 @@ function rabbitreceiver(){
     });
 }
 
-function minioget(filename, path){
+function minio_get(filename, path){
     minioClient.fGetObject('cars', filename, path, function(err) {
         if (err) {
             return console.log(err)
@@ -69,7 +69,7 @@ function minioget(filename, path){
     })
 }
 
-function minioput(filename, path){
+function minio_put(filename, path){
     minioClient.fPutObject('cars', filename, path, function (err, etag) {
         if (err) return console.log(err)
         console.log('File uploaded successfully.')
@@ -92,7 +92,7 @@ app.use(bodyParser.json())
 app.post('/get_photo', function(req, res) {
     res.setHeader('Content-Type', 'text/plain')
     console.log(req.body["filename"]);
-    minioget(req.body["filename"], '/tmp/photo.jpg')
+    minio_get(req.body["filename"], '/tmp/photo.jpg')
 
     res.end(JSON.stringify(req.body.name))
 })
@@ -102,13 +102,13 @@ app.post('/post_incoming', function(req, res) {
     res.setHeader('Content-Type', 'text/plain')
     res.write('your name:\n')
     console.log(req.body["filename"]);
-    minioput(req.body["filename"], './h786poj.jpg')
+    minio_put(req.body["filename"], './h786poj.jpg')
 
     let data = {
         "filename": req.body["filename"],
         "incoming": true
     };
-    rabbitsender(data)
+    rabbit_sender(data)
 
     res.end(JSON.stringify(req.body.name))
 })
@@ -119,13 +119,13 @@ app.post('/post_outcoming', function(req, res) {
     res.write('your name:\n')
     let filename = req.body["filename"]
     console.log(filename);
-    minioput(filename, `./${filename}`)
+    minio_put(filename, `./${filename}`)
 
     let data = {
         "filename": filename,
         "incoming": false
     };
-    rabbitsender(data)
+    rabbit_sender(data)
 
     res.end(JSON.stringify(req.body.name))
 })
