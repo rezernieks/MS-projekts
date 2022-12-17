@@ -4,6 +4,10 @@ const app = express()
 const bodyParser = require('body-parser');
 const amqp = require('amqplib/callback_api');
 
+const rabbitmq_username = 'rabbit-bunny';
+const rabbitmq_password = 'M@k0nsk@it1os@na';
+const rabbitmq_url = '127.0.0.1:5672';
+
 const Minio = require('minio')
 const minioClient = new Minio.Client({
     endPoint: '127.0.0.1',
@@ -11,6 +15,50 @@ const minioClient = new Minio.Client({
     useSSL: false,
     accessKey: 'minio-root',
     secretKey: 'M@k0nsk@it1os@na'});
+
+function rabbitsender(data){
+    amqp.connect(`amqp://${rabbitmq_username}:${rabbitmq_password}@${rabbitmq_url}`, function(error0, connection) {
+        if (error0) { throw error0; }
+        connection.createChannel(function(error1, channel) {
+            if (error1) {
+                throw error1;
+            }
+            var queue = 'car-queue';
+
+            var msg = JSON.stringify(data);
+            channel.assertQueue(queue, {
+                durable: true
+            });
+            channel.sendToQueue(queue, Buffer.from
+            (msg)); console.log(" [x] Sent %s", msg);
+        });
+    });
+}
+
+function rabbitreceiver(data){
+    amqp.connect(`amqp://${rabbitmq_username}:${rabbitmq_password}@${rabbitmq_url}`, function(error0, connection) {
+        if (error0) {
+            throw error0;
+        }
+        connection.createChannel(function(error1, channel) {
+            if (error1) {
+                throw error1;
+            }
+            var queue = 'my-queue';
+            channel.assertQueue(queue, {
+                durable: true
+            });
+            console.log(" [*] Waiting for messages in %s. To exit press CTRL+C", queue);
+            channel.consume(queue, function(msg) {
+                console.log(" [x] Received %s", msg.content.toString());
+                var json_data = JSON.parse(msg.content);
+                console.log("name is " +json_data.name);
+            }, {
+                noAck: true
+            });
+        });
+    });
+}
 
 app.listen(3000, () => {
     console.log("App listening on port 3000")
@@ -36,31 +84,16 @@ app.post('/get_photo', function(req, res) {
         console.log('success')
     })
 
-    const rabbitmq_username = 'rabbit-bunny';
-    const rabbitmq_password = 'M@k0nsk@it1os@na';
-    const rabbitmq_url = '127.0.0.1:5672';
-    amqp.connect(`amqp://${rabbitmq_username}:${rabbitmq_password}@${rabbitmq_url}`, function(error0, connection) {
-        if (error0) { throw error0; }
-        connection.createChannel(function(error1, channel) {
-            if (error1) {
-                throw error1;
-            }
-            var queue = 'car-queue';
-            var data = {
-                "filename": req.body["filename"],
-                "": 1234
-            };
-            var msg = JSON.stringify(data);
-            channel.assertQueue(queue, {
-                durable: true
-            });
-            channel.sendToQueue(queue, Buffer.from
-            (msg)); console.log(" [x] Sent %s", msg);
-        });
-    });
+    var data = {
+        "filename": req.body["filename"],
+        "": 1234
+    };
+    rabbitsender(data)
 
     res.end(JSON.stringify(req.body.name))
 })
+
+
 app.post('/post_incoming', function(req, res) {
     res.setHeader('Content-Type', 'text/plain')
     res.write('your name:\n')
@@ -70,31 +103,15 @@ app.post('/post_incoming', function(req, res) {
         console.log('File uploaded successfully.')
     });
 
-    const rabbitmq_username = 'rabbit-bunny';
-    const rabbitmq_password = 'M@k0nsk@it1os@na';
-    const rabbitmq_url = '127.0.0.1:5672';
-    amqp.connect(`amqp://${rabbitmq_username}:${rabbitmq_password}@${rabbitmq_url}`, function(error0, connection) {
-        if (error0) { throw error0; }
-        connection.createChannel(function(error1, channel) {
-            if (error1) {
-                throw error1;
-            }
-            var queue = 'my-queue';
-            var data = {
-                "filename": req.body["filename"],
-                "incoming": true
-            };
-            var msg = JSON.stringify(data);
-            channel.assertQueue(queue, {
-                durable: true
-            });
-            channel.sendToQueue(queue, Buffer.from
-            (msg)); console.log(" [x] Sent %s", msg);
-        });
-    });
+    var data = {
+        "filename": req.body["filename"],
+        "": 1234
+    };
+    rabbitsender(data)
 
     res.end(JSON.stringify(req.body.name))
 })
+
 
 app.post('/post_outcoming', function(req, res) {
     res.setHeader('Content-Type', 'text/plain')
@@ -105,28 +122,11 @@ app.post('/post_outcoming', function(req, res) {
         console.log('File uploaded successfully.')
     });
 
-    const rabbitmq_username = 'rabbit-bunny';
-    const rabbitmq_password = 'M@k0nsk@it1os@na';
-    const rabbitmq_url = '127.0.0.1:5672';
-    amqp.connect(`amqp://${rabbitmq_username}:${rabbitmq_password}@${rabbitmq_url}`, function(error0, connection) {
-        if (error0) { throw error0; }
-        connection.createChannel(function(error1, channel) {
-            if (error1) {
-                throw error1;
-            }
-            var queue = 'my-queue';
-            var data = {
-                "filename": req.body["filename"],
-                "incoming": false
-            };
-            var msg = JSON.stringify(data);
-            channel.assertQueue(queue, {
-                durable: true
-            });
-            channel.sendToQueue(queue, Buffer.from
-            (msg)); console.log(" [x] Sent %s", msg);
-        });
-    });
+    var data = {
+        "filename": req.body["filename"],
+        "": 1234
+    };
+    rabbitsender(data)
 
     res.end(JSON.stringify(req.body.name))
 })
