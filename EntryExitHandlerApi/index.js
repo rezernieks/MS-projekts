@@ -91,8 +91,9 @@ app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 app.post('/get_photo', function(req, res) {
     res.setHeader('Content-Type', 'text/plain')
-    console.log(req.body["filename"]);
-    minio_get(req.body["filename"], '/tmp/photo.jpg')
+    let filename = req.body["filename"]
+    console.log(filename);
+    minio_get(filename, '/tmp/')
 
     res.end(JSON.stringify(req.body.name))
 })
@@ -101,11 +102,12 @@ app.post('/get_photo', function(req, res) {
 app.post('/post_incoming', function(req, res) {
     res.setHeader('Content-Type', 'text/plain')
     res.write('your name:\n')
-    console.log(req.body["filename"]);
-    minio_put(req.body["filename"], './h786poj.jpg')
+    let filename = req.body["filename"]
+    console.log(filename);
+    minio_put(filename, `./${filename}`)
 
     let data = {
-        "filename": req.body["filename"],
+        "filename": filename,
         "incoming": true
     };
     rabbit_sender(data)
@@ -115,11 +117,17 @@ app.post('/post_incoming', function(req, res) {
 
 
 app.post('/post_outcoming', function(req, res) {
-    res.setHeader('Content-Type', 'text/plain')
     res.write('your name:\n')
     let filename = req.body["filename"]
     console.log(filename);
-    minio_put(filename, `./${filename}`)
+    // Get the file that was set to our field named "image"
+    const { image } = req.body["file"];
+    // If no image submitted, exit
+    if (!image) return res.sendStatus(400);
+    // If does not have image mime type prevent from uploading
+    if (/^image/.test(image.mimetype)) return res.sendStatus(400);
+
+    minio_put(filename, `./`)
 
     let data = {
         "filename": filename,
