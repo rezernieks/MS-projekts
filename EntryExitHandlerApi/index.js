@@ -23,9 +23,9 @@ function rabbitsender(data){
             if (error1) {
                 throw error1;
             }
-            var queue = 'car-queue';
+            let queue = 'car-queue';
 
-            var msg = JSON.stringify(data);
+            let msg = JSON.stringify(data);
             channel.assertQueue(queue, {
                 durable: true
             });
@@ -35,7 +35,7 @@ function rabbitsender(data){
     });
 }
 
-function rabbitreceiver(data){
+function rabbitreceiver(){
     amqp.connect(`amqp://${rabbitmq_username}:${rabbitmq_password}@${rabbitmq_url}`, function(error0, connection) {
         if (error0) {
             throw error0;
@@ -44,19 +44,35 @@ function rabbitreceiver(data){
             if (error1) {
                 throw error1;
             }
-            var queue = 'my-queue';
+            let queue = 'car-queue';
             channel.assertQueue(queue, {
                 durable: true
             });
             console.log(" [*] Waiting for messages in %s. To exit press CTRL+C", queue);
             channel.consume(queue, function(msg) {
                 console.log(" [x] Received %s", msg.content.toString());
-                var json_data = JSON.parse(msg.content);
+                let json_data = JSON.parse(msg.content);
                 console.log("name is " +json_data.name);
             }, {
                 noAck: true
             });
         });
+    });
+}
+
+function minioget(filename, path){
+    minioClient.fGetObject('cars', filename, path, function(err) {
+        if (err) {
+            return console.log(err)
+        }
+        console.log('success')
+    })
+}
+
+function minioput(filename, path){
+    minioClient.fPutObject('cars', filename, path, function (err, etag) {
+        if (err) return console.log(err)
+        console.log('File uploaded successfully.')
     });
 }
 
@@ -75,20 +91,8 @@ app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 app.post('/get_photo', function(req, res) {
     res.setHeader('Content-Type', 'text/plain')
-    res.write('your name:\n')
     console.log(req.body["filename"]);
-    minioClient.fGetObject('cars', req.body["filename"], '/tmp/photo.jpg', function(err) {
-        if (err) {
-            return console.log(err)
-        }
-        console.log('success')
-    })
-
-    var data = {
-        "filename": req.body["filename"],
-        "": 1234
-    };
-    rabbitsender(data)
+    minioget(req.body["filename"], '/tmp/photo.jpg')
 
     res.end(JSON.stringify(req.body.name))
 })
@@ -98,14 +102,11 @@ app.post('/post_incoming', function(req, res) {
     res.setHeader('Content-Type', 'text/plain')
     res.write('your name:\n')
     console.log(req.body["filename"]);
-    minioClient.fPutObject('cars', req.body["filename"], './h786poj.jpg', function (err, etag) {
-        if (err) return console.log(err)
-        console.log('File uploaded successfully.')
-    });
+    minioput(req.body["filename"], './h786poj.jpg')
 
-    var data = {
+    let data = {
         "filename": req.body["filename"],
-        "": 1234
+        "incoming": true
     };
     rabbitsender(data)
 
@@ -116,15 +117,13 @@ app.post('/post_incoming', function(req, res) {
 app.post('/post_outcoming', function(req, res) {
     res.setHeader('Content-Type', 'text/plain')
     res.write('your name:\n')
-    console.log(req.body["filename"]);
-    minioClient.fPutObject('cars', req.body["filename"], './h786poj.jpg', function (err, etag) {
-        if (err) return console.log(err)
-        console.log('File uploaded successfully.')
-    });
+    let filename = req.body["filename"]
+    console.log(filename);
+    minioput(filename, `./${filename}`)
 
-    var data = {
-        "filename": req.body["filename"],
-        "": 1234
+    let data = {
+        "filename": filename,
+        "incoming": false
     };
     rabbitsender(data)
 
