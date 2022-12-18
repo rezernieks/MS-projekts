@@ -46,16 +46,21 @@ function minio_put(filename, path){
 }
 
 async function upload_photo(image, filename) {
-    await image.mv(`C:/tmp/${filename}`, function (err) {
+    await image.mv(`C:/tmp/${filename}`, async function (err) {
         if (err)
             console.log(err);
-        minio_put(filename, `C:/tmp/${filename}`)
-        fs.unlink(`C:/tmp/${filename}`, (err) => {
+        await minio_put(filename, `C:/tmp/${filename}`, function (err) {
             if (err) {
                 throw err;
             }
-            console.log("Delete File successfully.");
+            fs.unlink(`C:/tmp/${filename}`, (err) => {
+                if (err) {
+                    throw err;
+                }
+                console.log("Delete File successfully.");
+            })
         })
+
     });
 }
 
