@@ -75,7 +75,7 @@ app.use(bodyParser.json())
 
 app.post('/post_incoming', async function (req, res) {
     let filename = req.body["filename"]
-    let path = `C:/tmp/${filename}`
+    let path = __dirname + '/tmp/' + filename
     let data = {
         "filename": filename,
         "incoming": true
@@ -93,7 +93,8 @@ app.post('/post_incoming', async function (req, res) {
 
 app.post('/post_outcoming', async function (req, res) {
     let filename = req.body["filename"]
-    let path = `C:/tmp/${filename}`
+    let path = __dirname + '/tmp/' + filename
+    console.log(path)
     let data = {
         "filename": filename,
         "incoming": false
