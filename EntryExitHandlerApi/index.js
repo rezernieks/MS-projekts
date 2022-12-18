@@ -18,12 +18,6 @@ const minioClient = new Minio.Client({
 
 
 
-function sleep(ms) {
-    return new Promise((resolve) => {
-        setTimeout(resolve, ms);
-    });
-}
-
 function rabbit_sender(data){
     amqp.connect(`amqp://${rabbitmq_username}:${rabbitmq_password}@${rabbitmq_url}`, function(error0, connection) {
         if (error0) { throw error0; }
@@ -54,9 +48,9 @@ async function upload_photo(image, filename) {
     await image.mv(`C:/tmp/${filename}`, function (err) {
         if (err)
             console.log(err);
+        minio_put(filename, `C:/tmp/${filename}`)
+        app.delete(`C:/tmp/${filename}`);
     });
-    await sleep(1000)
-    minio_put(filename, `C:/tmp/${filename}`)
 }
 
 
@@ -98,7 +92,7 @@ app.post('/post_outcoming', async function (req, res) {
     await upload_photo(image, filename)
 
     rabbit_sender(data)
-    app.delete(`C:/tmp/${filename}`);
+
 
     res.end(JSON.stringify(req.body.filename))
 })
