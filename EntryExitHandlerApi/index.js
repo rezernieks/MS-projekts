@@ -38,27 +38,27 @@ function rabbit_sender(data){
     });
 }
 
-function minio_put(filename, path){
+async function minio_put(filename, path){
     minioClient.fPutObject('cars', filename, path, function (err) {
         if (err) return console.log(err)
         console.log('File uploaded successfully.')
-    });
-}
-
-async function upload_photo(image, filename) {
-    await image.mv(`C:/tmp/${filename}`, async function (err) {
-        if (err)
-            console.log(err);
-        await minio_put(filename, `C:/tmp/${filename}`, function (err) {
+        fs.unlink(path, (err) => {
             if (err) {
                 throw err;
             }
-            fs.unlink(`C:/tmp/${filename}`, (err) => {
-                if (err) {
-                    throw err;
-                }
-                console.log("Delete File successfully.");
-            })
+            console.log("Delete File successfully.");
+        })
+    });
+}
+
+async function upload_photo(image, filename, path) {
+    await image.mv(path, async function (err) {
+        if (err)
+            console.log(err);
+        await minio_put(filename, path, function (err) {
+            if (err) {
+                throw err;
+            }
         })
 
     });
@@ -75,6 +75,7 @@ app.use(bodyParser.json())
 
 app.post('/post_incoming', async function (req, res) {
     let filename = req.body["filename"]
+    let path = `C:/tmp/${filename}`
     let data = {
         "filename": filename,
         "incoming": true
@@ -82,7 +83,7 @@ app.post('/post_incoming', async function (req, res) {
     const image = req.files.image;
     if (!image) return;
 
-    await upload_photo(image, filename)
+    await upload_photo(image, filename, path)
 
     rabbit_sender(data)
 
@@ -92,6 +93,7 @@ app.post('/post_incoming', async function (req, res) {
 
 app.post('/post_outcoming', async function (req, res) {
     let filename = req.body["filename"]
+    let path = `C:/tmp/${filename}`
     let data = {
         "filename": filename,
         "incoming": false
@@ -99,10 +101,9 @@ app.post('/post_outcoming', async function (req, res) {
     const image = req.files.image;
     if (!image) return;
 
-    await upload_photo(image, filename)
+    await upload_photo(image, filename, path)
 
     rabbit_sender(data)
-
 
     res.end(JSON.stringify(req.body.filename))
 })
