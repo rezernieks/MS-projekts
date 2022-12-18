@@ -18,44 +18,23 @@ const minioClient = new Minio.Client({
 
 function rabbit_sender(data){
     amqp.connect(`amqp://${rabbitmq_username}:${rabbitmq_password}@${rabbitmq_url}`, function(error0, connection) {
+        console.log("4");
         if (error0) { throw error0; }
         connection.createChannel(function(error1, channel) {
+            console.log("5");
             if (error1) {
                 throw error1;
             }
             let queue = 'car-queue';
 
             let msg = JSON.stringify(data);
+            console.log("6");
             channel.assertQueue(queue, {
                 durable: true
             });
+            console.log("7");
             channel.sendToQueue(queue, Buffer.from
             (msg)); console.log(" [x] Sent %s", msg);
-        });
-    });
-}
-
-function rabbit_receiver(){
-    amqp.connect(`amqp://${rabbitmq_username}:${rabbitmq_password}@${rabbitmq_url}`, function(error0, connection) {
-        if (error0) {
-            throw error0;
-        }
-        connection.createChannel(function(error1, channel) {
-            if (error1) {
-                throw error1;
-            }
-            let queue = 'car-queue';
-            channel.assertQueue(queue, {
-                durable: true
-            });
-            console.log(" [*] Waiting for messages in %s. To exit press CTRL+C", queue);
-            channel.consume(queue, function(msg) {
-                console.log(" [x] Received %s", msg.content.toString());
-                let json_data = JSON.parse(msg.content);
-                console.log("name is " +json_data.name);
-            }, {
-                noAck: true
-            });
         });
     });
 }
@@ -71,6 +50,7 @@ function minio_get(filename, path){
 
 function minio_put(filename, path){
     minioClient.fPutObject('cars', filename, path, function (err, etag) {
+        console.log("2");
         if (err) return console.log(err)
         console.log('File uploaded successfully.')
     });
@@ -79,14 +59,7 @@ function minio_put(filename, path){
 app.listen(3000, () => {
     console.log("App listening on port 3000")
 })
-app.use(
-    fileUpload({
-        limits: {
-            fileSize: 10000000,
-        },
-        abortOnLimit: true,
-    })
-);
+app.use(fileUpload());
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 app.post('/get_photo', function(req, res) {
@@ -117,23 +90,29 @@ app.post('/post_incoming', function(req, res) {
 
 
 app.post('/post_outcoming', function(req, res) {
-    res.write('your name:\n')
     let filename = req.body["filename"]
     console.log(filename);
     // Get the file that was set to our field named "image"
-    const { image } = req.body["file"];
+    const image = req.files.image;
     // If no image submitted, exit
-    if (!image) return res.sendStatus(400);
-    // If does not have image mime type prevent from uploading
-    if (/^image/.test(image.mimetype)) return res.sendStatus(400);
+    if (!image) return;
 
-    minio_put(filename, `./`)
+    console.log("1");
+    image.mv(`C:/tmp/${filename}`, function(err) {
+        if (err)
+            console.log(err);
+
+        console.log('File uploaded!');
+    });
+    minio_put(filename, `C:/tmp/${filename}`)
 
     let data = {
         "filename": filename,
         "incoming": false
     };
+    console.log("3");
     rabbit_sender(data)
+    app.delete(`C:/tmp/${filename}`);
 
-    res.end(JSON.stringify(req.body.name))
+    res.end(JSON.stringify(req.body.filename))
 })
