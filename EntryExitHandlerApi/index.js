@@ -9,6 +9,7 @@ const rabbitmq_password = 'M@k0nsk@it1os@na';
 const rabbitmq_url = '127.0.0.1:5672';
 
 const Minio = require('minio')
+const fs = require("fs");
 const minioClient = new Minio.Client({
     endPoint: '127.0.0.1',
     port: 9000,
@@ -49,7 +50,12 @@ async function upload_photo(image, filename) {
         if (err)
             console.log(err);
         minio_put(filename, `C:/tmp/${filename}`)
-        app.delete(`C:/tmp/${filename}`);
+        fs.unlink(`C:/tmp/${filename}`, (err) => {
+            if (err) {
+                throw err;
+            }
+            console.log("Delete File successfully.");
+        })
     });
 }
 
@@ -74,7 +80,6 @@ app.post('/post_incoming', async function (req, res) {
     await upload_photo(image, filename)
 
     rabbit_sender(data)
-    app.delete(`C:/tmp/${filename}`);
 
     res.end(JSON.stringify(req.body.filename))
 })
