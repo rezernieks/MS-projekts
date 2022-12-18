@@ -43,15 +43,6 @@ function rabbit_sender(data){
     });
 }
 
-function minio_get(filename, path){
-    minioClient.fGetObject('cars', filename, path, function(err) {
-        if (err) {
-            return console.log(err)
-        }
-        console.log('success')
-    })
-}
-
 function minio_put(filename, path){
     minioClient.fPutObject('cars', filename, path, function (err) {
         if (err) return console.log(err)
@@ -76,16 +67,6 @@ app.listen(3000, () => {
 app.use(fileUpload());
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
-app.post('/get_photo', function(req, res) {
-    res.setHeader('Content-Type', 'text/plain')
-    let filename = req.body["filename"]
-    console.log(filename);
-    minio_get(filename, '/tmp/')
-
-    res.end(JSON.stringify(req.body.name))
-})
-
-
 
 app.post('/post_incoming', async function (req, res) {
     let filename = req.body["filename"]
