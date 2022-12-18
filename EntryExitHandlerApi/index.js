@@ -98,12 +98,10 @@ app.post('/post_outcoming', function(req, res) {
     if (!image) return;
 
     console.log("1");
-    image.mv(`C:/tmp/${filename}`, function(err) {
+    image.mv(`C:/tmp/${filename}`, function (err) {
         if (err)
             console.log(err);
-
-        console.log('File uploaded!');
-    });
+    }).then(r=>console.log('File uploaded!'));
     minio_put(filename, `C:/tmp/${filename}`)
 
     let data = {
