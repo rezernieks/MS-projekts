@@ -6,12 +6,12 @@ const amqp = require('amqplib/callback_api');
 
 const rabbitmq_username = 'rabbit-bunny';
 const rabbitmq_password = 'M@k0nsk@it1os@na';
-const rabbitmq_url = '127.0.0.1:5672';
+const rabbitmq_url = 'rabbitmq:5672';
 
 const Minio = require('minio')
 const fs = require("fs");
 const minioClient = new Minio.Client({
-    endPoint: '127.0.0.1',
+    endPoint: 'minio',
     port: 9000,
     useSSL: false,
     accessKey: 'minio-root',
