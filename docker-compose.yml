@@ -26,9 +26,13 @@ services:
 
   msapi:
     container_name: "msapi"
-    image: msapi
+    build: ./EntryExitHandlerApi
+    restart: always
     ports:
       - '3000:3000'
+    depends_on:
+      - minio
+      - rabbitmq
 
 volumes:
   minio_storage: {}
