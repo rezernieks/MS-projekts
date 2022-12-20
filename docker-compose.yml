@@ -24,5 +24,11 @@ services:
       - RABBITMQ_DEFAULT_USER=rabbit-bunny
       - RABBITMQ_DEFAULT_PASS=M@k0nsk@it1os@na
 
+  msapi:
+    container_name: "msapi"
+    image: msapi
+    ports:
+      - '3000:3000'
+
 volumes:
   minio_storage: {}
