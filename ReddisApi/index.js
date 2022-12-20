@@ -1,44 +1,32 @@
 const redis = require('redis');
+const client = redis.createClient({ url: 'redis://redis:6379' });
+client.on("error", (error) => console.error(error));
+client.on('connect', () => console.log('redis connected', new Date().toISOString()));
+client.connect();
+
 const express = require('express');
-//const client = redis.createClient();
 const app = express();
 const bodyParser = require('body-parser');
-const PORT = 6379;
 
-const getClient = async () => {
-    const client = redis.createClient()
-    client.on("error", function(error) {
-        console.error(error);
-    })
-    client.on('connect', () => {
-        console.log('redis connected', new Date().toISOString());
-    });
-    await client.connect()
-    return client
-}
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 
-/*client.on("error", function(error) {
-    console.error(error);
-})
-client.connect();*/
-app.use(bodyParser.urlencoded({ extended: false }))
-app.use(bodyParser.json())
-app.get('/redis/get/:key', function (req, res) {
-    client.get(req.params.key, function(err, reply) {
-        res.status(200).send({
-            message: reply
-        });
+app.get('/redis/get/:key', async function (req, res) {
+    console.log(`GET ${req.params.key}`);
+    const value = await client.get(req.params.key);
+    res.status(200).send({
+        message: value
     });
-    client.del(req.params.key);
+    await client.del(req.params.key);
 })
 
 app.post('/redis/set', async function (req, res) {
-    const client = await getClient()
+    console.log(`POST ${req.body.key} : ${req.body.value}`);
     await client.set(req.body.key, req.body.value)
     res.end("OK");
 })
 
-app.listen(PORT, () => {
+app.listen(3003, () => {
     console.log("App listening on port 6379");
 })
 
