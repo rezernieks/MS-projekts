@@ -70,8 +70,8 @@ app.listen(3000, () => {
     console.log("App listening on port 3000")
 })
 app.use(fileUpload());
-app.use(bodyParser.urlencoded({ extended: false }))
-app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: true, limit : '100mb'}))
+app.use(bodyParser.json({limit : '100mb'}))
 
 app.post('/post_incoming', async function (req, res) {
     let filename = req.body["filename"]
