@@ -14,7 +14,7 @@ let intervalID = setInterval(() => {
   let img = "data:image/jpg;base64," + fs.readFileSync(__dirname + `\\dataset\\eu-license-plates\\car_${img_n}.jpg`, 'base64');
   let data = {img};
   axios 
-    .post(`http://127.0.0.1:${port}/post_incoming`, data)
+    .post(`http://io_handler_api:${port}/post_incoming`, data)
     .then(res => {
       console.log(`Status: ${res.status}`)
     })
@@ -29,7 +29,7 @@ let intervalID = setInterval(() => {
   img = "data:image/png;base64," + fs.readFileSync(__dirname + `\\dataset\\eu-license-plates\\car_${img_n}.jpg`, 'base64');
   data = {img}
   axios 
-    .post(`http://io_handler_api:${port}/post_incoming`, data)
+    .post(`http://io_handler_api:${port}/post_outcoming`, data)
     .then(res => {
       console.log(`Status: ${res.status}`)
     })
