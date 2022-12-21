@@ -3,7 +3,6 @@ const util = require('util');
 const minio = require('minio');
 const amqp = require('amqplib/callback_api');
 const nodemailer = require('nodemailer');
-const axios = require("axios");
 const exec = util.promisify(require('child_process').exec);
 
 const minioClient = new minio.Client({
@@ -22,12 +21,11 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-// file path in local storage
-const localFilePath = (filename) => `images/${filename}`;
+const localFilePath = (fileName) => `images/${fileName}`;
 
-const handleImage = async (filename, isIncoming) => {
-    const numberPlate = await downloadImage(filename)
-        .then(() => recognizeNumber(localFilePath(filename)))
+const handleObject = async (objectName, imageType, date) => {
+    const numberPlate = await downloadObject(objectName)
+        .then(() => recognizeNumber(localFilePath(objectName)))
         .then((alprResult) => {
             const results = JSON.parse(alprResult.stdout.toString()).results;
 
@@ -38,82 +36,70 @@ const handleImage = async (filename, isIncoming) => {
         });
 
     if (numberPlate)
-        console.log(`[${filename}]: Plate is ${numberPlate}`);
+        console.log(`[${objectName}]: Plate is ${numberPlate}`);
     else
-        console.log(`[${filename}]: Plate unrecognized`);
+        console.log(`[${objectName}]: Plate unrecognized`);
 
-    deleteFile(filename).then(() => console.log(`[${filename}] delete operation has been finished.`));
+    deleteFile(objectName).then(() => console.log(`[${objectName}] delete operation has been finished.`));
 
     if (!numberPlate)
         return;
 
-    const currentDate = new Date();
-
-    if (isIncoming) {
-        await createRecord(numberPlate, currentDate);
-        console.log(`[${filename}]: The arrival of the car with the number ${numberPlate} fixed`);
+    if (imageType === 'in') {
+        await createRecord(numberPlate, date);
         return;
     }
 
     const recordValue = await getRecordValue(numberPlate);
-    console.log(`[${filename}]: The departure of the car with the number ${numberPlate} fixed`);
 
     if (!recordValue) {
         await sendNotification(
-            `The car left at ${recordValue.getHours()}:${recordValue.getMinutes()}, the arrival was not recorded`
+            `The car left at ${date.getHours()}:${date.getMinutes()}, the arrival was not recorded`
         );
         return;
     }
 
-    const dateDiffMs = currentDate.getTime() - recordValue.getTime();
+    const dateDiffMs = date.getTime() - recordValue.getTime();
     const dateDiffMin = dateDiffMs / 60000;
     await sendNotification(
-        `The car with plate "${numberPlate}" left at ${currentDate.getHours()}:${currentDate.getMinutes()} and `+
-        `stayed there for ${dateDiffMin} minutes (${dateDiffMs} ms)`
+        `The car left at ${date.getHours()}:${date.getMinutes()} and stayed there for ${dateDiffMin} minutes`
     );
 }
 
-const downloadImage = async (objectName) => {
-    return minioClient.fGetObject('cars', objectName, `images/${objectName}`);
+const downloadObject = async (objectName) => {
+    return minioClient.fGetObject('test', objectName, `images/${objectName}`);
 }
 
-// aplr cmd
 const recognizeNumber = async (fileName) => {
     return exec(`alpr -c eu -p lv -j ${fileName}`);
 }
 
-// Delete file from minio and local storage
-const deleteFile = async (filename) => {
-    minioClient.removeObject('cars', filename, (err) => {
+const deleteFile = async (fileName) => {
+    minioClient.removeObject('test', fileName, (err) => {
         if (err)
-            console.log(`[${filename}] error while deleting from Minio: ${err}`);
+            console.log(`[${fileName}] error while deleting from Minio: ${err}`);
         else
-            console.log(`[${filename}] deleted from Minio`);
+            console.log(`[${fileName}] deleted from Minio`);
     })
 
-    fs.unlink(localFilePath(filename), (err) => {
+    fs.unlink(localFilePath(fileName), (err) => {
         if (err)
-            console.log(`[${filename}] error while deleting local storage: ${err}`);
+            console.log(`[${fileName}] error while deleting local storage: ${err}`);
         else
-            console.log(`[${filename}] deleted from local storage`);
+            console.log(`[${fileName}] deleted from local storage`);
     })
 }
 
-// Redis API start
 const getRecordValue = async (key) => {
-    const response = await axios.get(`http://redis_api:3003/redis/get/${key}`);
-    return new Date(response.data.value);
+    // TODO: Get record from Redis
+    // TODO: Delete record from Redis (delete on Redis service side?)
+    return new Date();
 }
 
-const createRecord = async (key, value) => {
-    await axios.post('http://redis_api:3003/redis/set', {
-        "key": key,
-        "value": value
-    });
+const createRecord = async (key, val) => {
+    // TODO: Add record to Redis
 }
-// Redis API end
 
-// Email sending
 const sendNotification = async (msg) => {
     const mailOptions = {
         from: 'number.recognizer.worker@gmail.com',
@@ -131,14 +117,14 @@ const sendNotification = async (msg) => {
     });
 }
 
-// RabbitMQ listener loop
+// Loop
 amqp.connect('amqp://rabbit-bunny:M@k0nsk@it1os@na@rabbitmq:5672', (error0, connection) => {
     if (error0) throw error0;
 
-    connection.createChannel(async (error1, channel) => {
+    connection.createChannel((error1, channel) => {
         if (error1) throw error1;
 
-        const queueName = 'car-queue';
+        const queueName = 'test';
 
         channel.assertQueue(queueName, { durable: true });
 
@@ -148,7 +134,7 @@ amqp.connect('amqp://rabbit-bunny:M@k0nsk@it1os@na@rabbitmq:5672', (error0, conn
             queueName,
             (message) => {
                 const jsonData = JSON.parse(message.content);
-                handleImage(jsonData.filename, jsonData.incoming);
+                handleObject(jsonData.fileName);
             },
             { noAck: true }
         );
