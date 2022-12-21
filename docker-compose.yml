@@ -39,6 +39,16 @@ services:
     depends_on:
       - redis
 
+  io_handler_api:
+    container_name: "io_handler_api"
+    build: ./EntryExitHandlerApi
+    restart: always
+    ports:
+      - '3000:3000'
+    depends_on:
+      - minio
+      - rabbitmq
+
   number_recognition_worker:
     container_name: 'number_recognition_worker'
     build: ./NumberRecognitionWorker
@@ -47,6 +57,7 @@ services:
       - minio
       - rabbitmq
       - redis_api
+      - io_handler_api
 
 volumes:
   minio_storage: {}
