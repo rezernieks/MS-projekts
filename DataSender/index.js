@@ -4,8 +4,13 @@ const fs = require('fs');
 const MAX_IMG = 52;
 const port = 3000;
 
+let cars_in = Array(MAX_IMG+1).fill(false);
 let intervalID = setInterval(() => {
   let img_n = Math.floor(Math.random() * MAX_IMG);
+  while(cars_in[img_n]) {
+    img_n = Math.floor(Math.random() * MAX_IMG);
+  }
+  cars_in[img_n] = true;
   let img = "data:image/jpg;base64," + fs.readFileSync(__dirname + `\\dataset\\eu-license-plates\\car_${img_n}.jpg`, 'base64');
   let data = {img};
   axios 
@@ -16,7 +21,11 @@ let intervalID = setInterval(() => {
     .catch(err => {
       console.error(err)
     })
-  img_n = img_n != MAX_IMG ? img_n + 1 : img_n - 1;
+  img_n = Math.floor(Math.random() * MAX_IMG);
+  while(!cars_in[img_n]) {
+    img_n = Math.floor(Math.random() * MAX_IMG);
+  }
+  cars_in[img_n] = false; 
   img = "data:image/png;base64," + fs.readFileSync(__dirname + `\\dataset\\eu-license-plates\\car_${img_n}.jpg`, 'base64');
   data = {img}
   axios 

@@ -31,6 +31,10 @@ services:
     depends_on:
       - minio
       - rabbitmq
+  datasender:
+    container_name: 'datasender'
+    build: ./DataSender
+    restart: always
 
 volumes:
   minio_storage: {}
