@@ -1,7 +1,7 @@
 const axios = require('axios');
 const fs = require('fs');
 
-const MAX_IMG = 52;
+const MAX_IMG = 14;
 const port = 3000;
 
 let cars_in = Array(MAX_IMG+1).fill(false);
