@@ -58,9 +58,5 @@ services:
       - rabbitmq
       - redis_api
       - io_handler_api
-  datasender:
-    containter_name: 'datasender'
-    build: './DataSender'
-    restart: always
 volumes:
   minio_storage: {}
