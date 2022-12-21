@@ -5,14 +5,26 @@ const MAX_IMG = 432;
 const port = 3000;
 
 let intervalID = setInterval(() => {
-  const img_n = Math.floor(Math.random() * MAX_IMG);
-  const img = "data:image/png;base64," + fs.readFileSync(__dirname + `\\dataset\\images\\Cars${img_n}.png`, 'base64');
-  const data = {img};
-  axios
+  let img_n = Math.floor(Math.random() * MAX_IMG);
+  let img = "data:image/png;base64," + fs.readFileSync(__dirname + `\\dataset\\images\\Cars${img_n}.png`, 'base64');
+  let data = {img};
+  axios 
     .post(`http://127.0.0.1:${port}/post_incoming`, data)
     .then(res => {
       console.log(`Status: ${res.status}`)
     })
     .catch(err => {
       console.error(err)
-})}, 10000);
+    })
+  img_n = img_n + 1 ? img_n != MAX_IMG : img_n - 1;
+  img = "data:image/png;base64," + fs.readFileSync(__dirname + `\\dataset\\images\\Cars${img_n}.png`, 'base64');
+  data = {img}
+  axios 
+    .post(`http://127.0.0.1:${port}/post_incoming`, data)
+    .then(res => {
+      console.log(`Status: ${res.status}`)
+    })
+    .catch(err => {
+      console.error(err)
+    })
+}, 10000);
