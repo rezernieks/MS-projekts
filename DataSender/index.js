@@ -1,29 +1,39 @@
-const express = require('express');
 const axios = require('axios');
 const fs = require('fs');
-const myParser = require('body-parser');
 
-const app = express();
-
-const MAX_IMG = 432;
+const MAX_IMG = 52;
 const port = 3000;
-app.use(myParser.json({limit: '200mb'}));
-app.use(myParser.urlencoded({limit: '200mb', extended: true}));
-app.use(express.json());
 
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);  
-});
-  
+let cars_in = Array(MAX_IMG+1).fill(false);
 let intervalID = setInterval(() => {
-    const img_n = Math.floor(Math.random() * MAX_IMG);
-    const img = "data:image/png;base64," + fs.readFileSync(__dirname + `\\dataset\\images\\Cars${img_n}.png`, 'base64');
-    const data = {img};
-  axios
-    .post('http://localhost:9000/', data)
+  let img_n = Math.floor(Math.random() * MAX_IMG);
+  while(cars_in[img_n]) {
+    img_n = Math.floor(Math.random() * MAX_IMG);
+  }
+  cars_in[img_n] = true;
+  let img = "data:image/jpg;base64," + fs.readFileSync(__dirname + `\\dataset\\eu-license-plates\\car_${img_n}.jpg`, 'base64');
+  let data = {img};
+  axios 
+    .post(`http://127.0.0.1:${port}/post_incoming`, data)
     .then(res => {
       console.log(`Status: ${res.status}`)
     })
     .catch(err => {
       console.error(err)
-    })}, 10000);
+    })
+  img_n = Math.floor(Math.random() * MAX_IMG);
+  while(!cars_in[img_n]) {
+    img_n = Math.floor(Math.random() * MAX_IMG);
+  }
+  cars_in[img_n] = false; 
+  img = "data:image/png;base64," + fs.readFileSync(__dirname + `\\dataset\\eu-license-plates\\car_${img_n}.jpg`, 'base64');
+  data = {img}
+  axios 
+    .post(`http://io_handler_api:${port}/post_incoming`, data)
+    .then(res => {
+      console.log(`Status: ${res.status}`)
+    })
+    .catch(err => {
+      console.error(err)
+    })
+}, 10000);
