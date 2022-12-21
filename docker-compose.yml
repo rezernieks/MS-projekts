@@ -24,8 +24,8 @@ services:
       - RABBITMQ_DEFAULT_USER=rabbit-bunny
       - RABBITMQ_DEFAULT_PASS=M@k0nsk@it1os@na
 
-  msapi:
-    container_name: "msapi"
+  io_handler_api:
+    container_name: "io_handler_api"
     build: ./EntryExitHandlerApi
     restart: always
     ports:
