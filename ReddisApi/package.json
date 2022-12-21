@@ -1,0 +1,15 @@
+{
+  "name": "redis-api",
+  "version": "1.0.0",
+  "description": "redis db projetam",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "redis": "^4.5.1",
+    "express": "^4.16.1"
+  }
+}

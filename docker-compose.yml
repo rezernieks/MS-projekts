@@ -24,6 +24,31 @@ services:
       - RABBITMQ_DEFAULT_USER=rabbit-bunny
       - RABBITMQ_DEFAULT_PASS=M@k0nsk@it1os@na
 
+  redis:
+    container_name: "redis"
+    image: redis
+    ports:
+      - '6379:6379'
+
+  redis_api:
+    container_name: 'redis_api'
+    build: ./ReddisApi
+    restart: always
+    ports:
+      - '3003:3003'
+    depends_on:
+      - redis
+
+  io_handler_api:
+    container_name: "io_handler_api"
+    build: ./EntryExitHandlerApi
+    restart: always
+    ports:
+      - '3000:3000'
+    depends_on:
+      - minio
+      - rabbitmq
+
   number_recognition_worker:
     container_name: 'number_recognition_worker'
     build: ./NumberRecognitionWorker
@@ -31,10 +56,8 @@ services:
     depends_on:
       - minio
       - rabbitmq
-  datasender:
-    container_name: 'datasender'
-    build: ./DataSender
-    restart: always
+      - redis_api
+      - io_handler_api
 
 volumes:
   minio_storage: {}
