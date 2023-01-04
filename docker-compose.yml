@@ -58,6 +58,5 @@ services:
       - rabbitmq
       - redis_api
       - io_handler_api
-
 volumes:
   minio_storage: {}
